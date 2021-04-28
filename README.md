@@ -35,7 +35,9 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
-    -v, --verbose    Show verbose output
+    -q, --quiet      Supress output at a level or lower. -q: INFO, -qq: WARN, -qqq: ERROR (i.e.
+                     everything)
+    -v, --verbose    Show verbose output at a level or higher. -v:  DEBUG, -vv: TRACE
     -V, --version    Prints version information
 
 OPTIONS:
