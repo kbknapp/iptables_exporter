@@ -23,13 +23,33 @@ capabilities in both the ambient and bounding set:
 - Scrape duration in milliseconds
 - Scrape success
 
-# Command Line Interface
+# Installation
+
+At present, one must either install via `cargo` or compile from source.
+However, binary releases are planned in the near future.
+
+## Via `cargo`
 
 ```
-iptables_exporter v0.1.0 (...)
-Kevin K. <kbknapp@gmail.com>
-A Prometheus exporter for iptables
+$ cargo install iptables_exporter
+```
 
+## Compile from Source
+
+Ensure you have a [Rust toolchain installed](https://rustup.rs).
+
+```
+$ git clone https://github.com/kbknapp/iptables_exporter
+$ cd iptables_exporter
+$ cargo build --release
+$ sudo cp target/release/iptables_exporter /usr/local/bin/
+```
+
+# Usage
+
+## Command Line Interface
+
+```
 USAGE:
     iptables_exporter [FLAGS] [OPTIONS]
 
@@ -41,9 +61,34 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-        --collect-interval <SECS>      How often metrics are gathered [default: 15]
-    -l, --listen-address <ADDR>        The listen address scraping metrics [default: 0.0.0.0]
-    -p, --listen-port <listen-port>    The listen port for scraping metrics [default: 9455]
+        --collect-interval <SECS>    How often metrics are gathered [default: 5]
+    -l, --listen-address <ADDR>      The listen address scraping metrics [default: 0.0.0.0]
+    -p, --listen-port <PORT>         The listen port for scraping metrics [default: 9455]
+```
+
+To run with the default options, and the binary is installed somewhere in your
+`$PATH`:
+
+```
+$ sudo iptables_exporter
+```
+
+# Prometheus Configuration
+
+You can add the following scrape configs to Prometheus:
+
+```yaml
+scrape_configs:
+  - job_name: 'iptables'
+    static_configs:
+    - targets:
+      - 'localhost:9455'
+      - 'other_host:9455'
+
+    relabel_configs:
+    - source_labels: [ '__address__' ]
+      regex: '(.*):\d+'
+      target_label: instance
 ```
 
 # Example Metrics
