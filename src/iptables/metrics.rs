@@ -95,7 +95,7 @@ impl Metrics {
                 let cpt =
                     self.chain_packets_total
                         .with_label_values(&[&t.name, &c.name, c.policy()]);
-                let diff = c.counter.bytes() - cpt.get();
+                let diff = c.counter.packets() - cpt.get();
                 cpt.inc_by(diff);
 
                 let rt = self.rules_total.with_label_values(&[&t.name, &c.name]);
