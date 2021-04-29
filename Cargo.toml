@@ -5,11 +5,6 @@ edition = "2018"
 authors = [
 	"Kevin K. <kbknapp@gmail.com>",
 ]
-include = [
-	"src/**/*",
-	"Cargo.toml",
-	"README.md"
-]
 description = "A Prometheus exporter for iptables"
 repository = "https://github.com/kbknapp/iptables_exporter"
 keywords = [
