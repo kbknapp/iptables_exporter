@@ -12,11 +12,12 @@ impl Counter {
     //      ^ Packets
     pub(crate) fn parse_counter<S: AsRef<str>>(line: S) -> Self {
         let line = line.as_ref();
+        let len = line.len();
         let packet_start = idx_after(0, line, '[').unwrap_or(0);
-        let packet_end = idx_after(packet_start + 1, line, ':').unwrap_or(line.len());
+        let packet_end = idx_after(packet_start + 1, line, ':').unwrap_or(len);
 
         let bytes_start = packet_end + 1;
-        let bytes_end = idx_after(bytes_start, line, ']').unwrap_or(line.len());
+        let bytes_end = idx_after(bytes_start, line, ']').unwrap_or(len);
 
         Self {
             packets: line[packet_start + 1..packet_end].parse().unwrap_or(0),

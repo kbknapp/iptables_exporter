@@ -36,9 +36,10 @@ impl Chain {
     //                   ^ Custom
     pub(crate) fn parse_chain<S: AsRef<str>>(line: S) -> Result<Self> {
         let line = line.as_ref();
+        let len = line.len();
 
         let name_start = idx_after(0, line, ':').unwrap_or(0);
-        let name_end = idx_after(name_start, line, ' ').unwrap_or(line.len() - 2); // -2 for name_end + 2 below
+        let name_end = idx_after(name_start, line, ' ').unwrap_or(len - 2); // -2 for name_end + 2 below
 
         let mut chain = Chain::new(line[name_start + 1..name_end].trim());
 
@@ -46,7 +47,7 @@ impl Chain {
             "-" => chain.builtin = false,
             _ => {
                 let policy_start = name_end;
-                let policy_end = idx_after(policy_start + 1, line, ' ').unwrap_or(line.len());
+                let policy_end = idx_after(policy_start + 1, line, ' ').unwrap_or(len);
 
                 let policy = line[policy_start..policy_end].trim();
                 chain.policy = Some(

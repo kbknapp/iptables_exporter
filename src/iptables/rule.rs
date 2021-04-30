@@ -15,13 +15,13 @@ impl Rule {
         let counter_end = idx_after(0, line, ']').unwrap_or(0);
         let flag = idx_after(counter_end, line, 'A').unwrap_or(0);
         let chain_start = idx_after(flag, line, ' ').unwrap_or(0);
-        let chain_end = idx_after(chain_start + 2, line, ' ').unwrap_or(line.len());
+        let chain_end = idx_after(chain_start + 2, line, ' ').unwrap_or_else(|| line.len());
         let chain = line[chain_start..chain_end].trim().into();
         Ok((
             chain,
             Self {
                 rule: line[chain_end..].trim().into(),
-                counter: counter,
+                counter,
             },
         ))
     }
