@@ -25,18 +25,14 @@ capabilities in both the ambient and bounding set:
 
 # Installation
 
-At present, one must either install via `cargo` or compile from source.
-However, binary releases are planned in the near future.
-
-## Via `cargo`
-
-```
-$ cargo install iptables_exporter
-```
+`iptables_exporter` is a single binary that must be placed somewhere in your
+`$PATH`. One can either download 64-bit Linux binaries from [the Release Page](https://github.com/kbknapp/iptables_exporter/releases)
+or one can also compile from source.
 
 ## Compile from Source
 
-Ensure you have a [Rust toolchain installed](https://rustup.rs).
+Ensure you have a [Rust toolchain installed](https://rustup.rs). Some of the
+dependencies also require `gcc` to be installed.
 
 ```
 $ git clone https://github.com/kbknapp/iptables_exporter
