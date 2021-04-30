@@ -59,10 +59,19 @@ jobs:
         env:
           SHA: ${{ steps.short-sha.outputs.sha }}
 
-      - name: Nightly Release
+      - name: Remove previous Nightly Release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        with:
+          delete_release: true
+          tag_name: nightly
+          repo: kbknapp/iptables_exporter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Nightly Release
         uses: softprops/action-gh-release@v1
         with:
-          name: iptables_exporter Nightly
+          name: iptables_exporter Nightly (${{ env.SHA }})
           tag_name: nightly
           prerelease: true
           body_path: nightly-CHANGELOG.md
