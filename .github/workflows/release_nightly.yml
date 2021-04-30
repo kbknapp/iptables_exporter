@@ -8,9 +8,9 @@ name: Nightly Release
 env:
   RELEASE_BIN: iptables_exporter
   RELEASE_ADDS: >-
-    iptables_exporter
     LICENSE-APACHE
     LICENSE-MIT
+    nightly-CHANGELOG.md
     README.md
 
 jobs:
@@ -36,13 +36,6 @@ jobs:
           command: build
           args: --release
 
-      - name: Get Short SHA
-        id: short_sha
-        run: echo ::set-output name=SHORT_SHA::${GITHUB_SHA:0:8}
-
-      - name: Create archive for Linux
-        run: cp ./target/release/${{ env.RELEASE_BIN }} . && tar czf ${{ env.RELEASE_BIN }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}-linux-x86_64.tar.gz ${{ env.RELEASE_ADDS }}
-
       - name: Install CLOG
         uses: actions-rs/cargo@v1
         with:
@@ -50,17 +43,32 @@ jobs:
           args: clog-cli
 
       - name: Generate Changelog
-        run: clog -F -o nightly-CHANGELOG.md
+        run: clog -F -o nightly-CHANGELOG.md -i /dev/null
+
+      - name: Make artifacts dir
+        run: mkdir -p artifacts/
+
+      - name: Copy all artifacts into dir
+        run: cp target/release/${{ env.RELEASE_BIN }} ${{ env.RELEASE_ADDS }} artifacts/
+
+      - uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+
+      - name: Create archive for Linux
+        run: cd artifacts/ && tar czf ../${{ env.RELEASE_BIN }}-${{ env.SHA }}-linux-x86_64.tar.gz ./*
+        env:
+          SHA: ${{ steps.short-sha.outputs.sha }}
 
       - name: Nightly Release
         uses: softprops/action-gh-release@v1
         with:
-          name: iptables_exporter Nightly ${{ steps.get_short_sha.outputs.SHORT_SHA }}
+          name: iptables_exporter Nightly
           tag_name: nightly
           prerelease: true
           body_path: nightly-CHANGELOG.md
           files: |
-            ${{ env.RELEASE_BIN }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}-linux-x86_64.tar.gz
+            ${{ env.RELEASE_BIN }}-${{ env.SHA }}-linux-x86_64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: kbknapp/iptables_exporter
+          SHA: ${{ steps.short-sha.outputs.sha }}

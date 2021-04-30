@@ -11,6 +11,7 @@ jobs:
         rust:
           - stable
           - nightly
+          - 1.46.0 # MSRV
 
     steps:
       - uses: actions/checkout@v2
