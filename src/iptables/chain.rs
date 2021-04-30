@@ -77,7 +77,7 @@ mod test {
     #[test]
     fn chain_parse_builtin() {
         assert_eq!(
-            Chain::parse_chain(":POSTROUTING ACCEPT [3907:262379]"),
+            Chain::parse_chain(":POSTROUTING ACCEPT [3907:262379]").unwrap(),
             Chain {
                 name: "POSTROUTING".into(),
                 builtin: true,
@@ -94,7 +94,7 @@ mod test {
     #[test]
     fn chain_parse_custom() {
         assert_eq!(
-            Chain::parse_chain(":DOCKER-ISOLATION - [0:0]"),
+            Chain::parse_chain(":DOCKER-ISOLATION - [0:0]").unwrap(),
             Chain {
                 name: "DOCKER-ISOLATION".into(),
                 builtin: false,

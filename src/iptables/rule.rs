@@ -34,7 +34,7 @@ mod test {
     #[test]
     fn rule_parse_no_traffic() {
         assert_eq!(
-            Rule::parse_rule("[0:0] -A LIBVIRT_PRT -s 192.168.122.0/24 ! -d 192.168.122.0/24 -p tcp -j MASQUERADE --to-ports 1024-65535"),
+            Rule::parse_rule("[0:0] -A LIBVIRT_PRT -s 192.168.122.0/24 ! -d 192.168.122.0/24 -p tcp -j MASQUERADE --to-ports 1024-65535").unwrap(),
             ("LIBVIRT_PRT".into(),
              Rule {
                 rule: "-s 192.168.122.0/24 ! -d 192.168.122.0/24 -p tcp -j MASQUERADE --to-ports 1024-65535".into(),
@@ -49,7 +49,7 @@ mod test {
     #[test]
     fn rule_parse_traffic() {
         assert_eq!(
-            Rule::parse_rule("[607613:364557889] -A POSTROUTING -j LIBVIRT_PRT"),
+            Rule::parse_rule("[607613:364557889] -A POSTROUTING -j LIBVIRT_PRT").unwrap(),
             (
                 "POSTROUTING".into(),
                 Rule {
