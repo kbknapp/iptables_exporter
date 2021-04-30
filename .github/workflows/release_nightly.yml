@@ -1,0 +1,66 @@
+---
+on:
+  push:
+    branches: main
+
+name: Nightly Release
+
+env:
+  RELEASE_BIN: iptables_exporter
+  RELEASE_ADDS: >-
+    iptables_exporter
+    LICENSE-APACHE
+    LICENSE-MIT
+    README.md
+
+jobs:
+  nightly-release:
+    name: Nightly Release
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          pdrofile: minimal
+          toolchain: nightly
+          override: true
+
+      - name: Install cc
+        run: sudo apt-get update && sudo apt-get install --yes gcc
+
+      - name: Compile
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - name: Get Short SHA
+        id: short_sha
+        run: echo ::set-output name=SHORT_SHA::${GITHUB_SHA:0:8}
+
+      - name: Create archive for Linux
+        run: cp ./target/release/${{ env.RELEASE_BIN }} . && tar czf ${{ env.RELEASE_BIN }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}-linux-x86_64.tar.gz ${{ env.RELEASE_ADDS }}
+
+      - name: Install CLOG
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: clog-cli
+
+      - name: Generate Changelog
+        run: clog -F -o nightly-CHANGELOG.md
+
+      - name: Nightly Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: iptables_exporter Nightly ${{ steps.get_short_sha.outputs.SHORT_SHA }}
+          tag_name: nightly
+          prerelease: true
+          body_path: nightly-CHANGELOG.md
+          files: |
+            ${{ env.RELEASE_BIN }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}-linux-x86_64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: kbknapp/iptables_exporter
