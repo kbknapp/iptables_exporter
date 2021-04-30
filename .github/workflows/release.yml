@@ -40,8 +40,14 @@ jobs:
           command: build
           args: --release
 
+      - name: Make artifacts dir
+        run: mkdir -p artifacts/
+
+      - name: Copy all artifacts into dir
+        run: cp target/release/${{ env.RELEASE_BIN }} ${{ env.RELEASE_ADDS }} artifacts/
+
       - name: Create archive for Linux
-        run: tar czf ${{ env.RELEASE_BIN }}-${{ steps.get_version.outputs.VERSION }}-linux-x86_64.tar.gz ./target/release/${{ env.RELEASE_BIN }} ${{ env.RELEASE_ADDS }}
+        run: cd artifacts/  && tar czf ../${{ env.RELEASE_BIN }}-${{ steps.get_version.outputs.VERSION }}-linux-x86_64.tar.gz ./*
 
       - name: Release
         uses: softprops/action-gh-release@v1
