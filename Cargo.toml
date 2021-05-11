@@ -18,8 +18,8 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 
 [badges]
-is-it-maintained-issue-resolution = { repository = "clap-rs/clap" }
-is-it-maintained-open-issues = { repository = "clap-rs/clap" }
+is-it-maintained-issue-resolution = { repository = "kbknapp/iptables_exporter" }
+is-it-maintained-open-issues = { repository = "kbknapp/iptables_exporter" }
 maintenance = {status = "actively-developed"}
 
 [dependencies]
