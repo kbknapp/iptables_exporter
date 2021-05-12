@@ -45,7 +45,7 @@ async fn main() {
     let registry = Arc::new(Registry::new());
     let mut metrics = unwrap_or_exit!(Metrics::new(&registry));
     let scrape_duration = unwrap_or_exit!(IntGauge::new(
-        "iptables_scape_duration_milliseconds",
+        "iptables_scrape_duration_milliseconds",
         "Duration in milliseconds of the scrape",
     ));
 
