@@ -3,7 +3,7 @@
 
 An asynchronous Prometheus exporter for `iptables`
 
-`iptables_exporter` runes `iptables-save --counter` and scrapes the output to
+`iptables_exporter` runs `iptables-save --counter` and scrapes the output to
 build Prometheus metrics. Because `iptables-save` requires `root` privileges,
 this tool must be run as `root` (or via `sudo`) or with the following
 capabilities in both the ambient and bounding set:
@@ -270,9 +270,9 @@ iptables_rules_total{chain="PREROUTING",table="mangle"} 0
 iptables_rules_total{chain="PREROUTING",table="nat"} 1
 iptables_rules_total{chain="PREROUTING",table="raw"} 0
 iptables_rules_total{chain="sshuttle-12300",table="nat"} 4
-# HELP iptables_scape_duration_milliseconds Duration in milliseconds of the scrape
-# TYPE iptables_scape_duration_milliseconds gauge
-iptables_scape_duration_milliseconds 2
+# HELP iptables_scrape_duration_milliseconds Duration in milliseconds of the scrape
+# TYPE iptables_scrape_duration_milliseconds gauge
+iptables_scrape_duration_milliseconds 2
 # HELP iptables_scrape_success If the scrape was a success
 # TYPE iptables_scrape_success gauge
 iptables_scrape_success 1
