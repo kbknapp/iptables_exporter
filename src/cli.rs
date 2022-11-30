@@ -18,6 +18,10 @@ pub(crate) struct Args {
     /// The listen address scraping metrics
     #[arg(short, long, default_value = "0.0.0.0", value_name = "ADDR")]
     pub(crate) listen_address: IpAddr,
+    /// Which backends to scrape for metrics, multiple targets can be enabled at
+    /// once by using this flag multiple times
+    #[arg(short = 't', long, visible_alias = "scrape-target", default_value = "iptables", action = ArgAction::Append, value_enum, value_name = "TARGET")]
+    pub(crate) scrape_targets: Vec<ScrapeTarget>,
     /// Show verbose output at a level or higher. -v:  DEBUG, -vv: TRACE
     #[arg(long, short, action = ArgAction::Count)]
     pub(crate) verbose: u8,
@@ -25,4 +29,20 @@ pub(crate) struct Args {
     /// (i.e. everything)
     #[arg(long, short, overrides_with = "verbose", action = ArgAction::Count)]
     pub(crate) quiet: u8,
+}
+
+#[derive(clap::ValueEnum, PartialEq, Eq, Copy, Clone, Debug, strum::AsRefStr, strum::Display)]
+pub(crate) enum ScrapeTarget {
+    /// enable 'iptables-save' for metrics
+    #[strum(serialize = "iptables")]
+    Iptables,
+    /// enable 'ip6tables-save' for metrics
+    #[strum(serialize = "ip6tables")]
+    Ip6tables,
+    /// enable 'iptables-legacy-save' for metrics
+    #[strum(serialize = "iptables-legacy")]
+    IptablesLegacy,
+    /// enable 'ip6tables-legacy-save' for metrics
+    #[strum(serialize = "ip6tables-legacy")]
+    Ip6tablesLegacy,
 }
