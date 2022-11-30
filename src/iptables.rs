@@ -1,10 +1,3 @@
-use std::{result::Result as StdResult, str::FromStr};
-
-use anyhow::{Context, Result};
-use tokio::process::Command;
-
-use crate::error::IptablesError;
-
 mod chain;
 mod counter;
 mod metrics;
@@ -17,16 +10,25 @@ pub(crate) use metrics::Metrics;
 pub(crate) use rule::Rule;
 pub(crate) use table::Table;
 
-pub(crate) async fn iptables_save() -> Result<String> {
+use std::{result::Result as StdResult, str::FromStr};
+
+use anyhow::{Context, Result};
+use tokio::process::Command;
+
+use crate::{cli::ScrapeTarget, error::IptablesError};
+
+pub(crate) async fn iptables_save(tgt: ScrapeTarget) -> Result<String> {
+    let cmd = format!("{tgt}-save");
+
     String::from_utf8(
-        Command::new("iptables-save")
+        Command::new(&cmd)
             .arg("-c")
             .output()
             .await
-            .with_context(|| "Failed to run iptables-save")?
+            .with_context(|| format!("Failed to run {cmd}"))?
             .stdout,
     )
-    .with_context(|| "Failed iptables-save output to valid UTF-8")
+    .with_context(|| format!("Failed {cmd} output to valid UTF-8"))
 }
 
 #[allow(dead_code)]
