@@ -21,7 +21,8 @@ pub(crate) struct Args {
     /// Show verbose output at a level or higher. -v:  DEBUG, -vv: TRACE
     #[arg(long, short, action = ArgAction::Count)]
     pub(crate) verbose: u8,
-    /// Supress output at a level or lower. -q: INFO, -qq: WARN, -qqq: ERROR (i.e. everything)
+    /// Supress output at a level or lower. -q: INFO, -qq: WARN, -qqq: ERROR
+    /// (i.e. everything)
     #[arg(long, short, overrides_with = "verbose", action = ArgAction::Count)]
     pub(crate) quiet: u8,
 }
