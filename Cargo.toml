@@ -1,7 +1,7 @@
 [package]
 name = "iptables_exporter"
-version = "0.1.0"
-edition = "2018"
+version = "0.2.0"
+edition = "2021"
 authors = [
 	"Kevin K. <kbknapp@gmail.com>",
 ]
@@ -16,6 +16,7 @@ keywords = [
 categories = ["command-line-utilities"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
+rust-version = "1.60.0" # MSRV
 
 [badges]
 is-it-maintained-issue-resolution = { repository = "kbknapp/iptables_exporter" }
@@ -24,13 +25,10 @@ maintenance = {status = "actively-developed"}
 
 [dependencies]
 anyhow = "1.0.40"
-clap = "3.0.0-beta.2"
-prometheus = "0.12.0"
+clap = {version= "4.0.0", features = ["derive", "cargo", "wrap_help"]}
+prometheus = "0.13.3"
 prometheus-hyper = "0.1.2"
 thiserror = "1.0.24"
 tokio = { version = "1.5.0", features = ["full"] }
 tracing = "0.1.25"
-tracing-subscriber = "0.2.17"
-
-[build-dependencies]
-clap = "3.0.0-beta.2"
+tracing-subscriber = "0.3.16"

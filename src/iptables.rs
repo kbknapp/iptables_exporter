@@ -1,5 +1,4 @@
-use std::result::Result as StdResult;
-use std::str::FromStr;
+use std::{result::Result as StdResult, str::FromStr};
 
 use anyhow::{Context, Result};
 use tokio::process::Command;
@@ -55,9 +54,7 @@ pub(crate) struct IptablesState {
 }
 
 impl IptablesState {
-    pub(crate) fn new() -> Self {
-        Self { tables: Vec::new() }
-    }
+    pub(crate) fn new() -> Self { Self { tables: Vec::new() } }
 
     pub(crate) async fn parse<S: AsRef<str>>(&mut self, out: S) -> Result<()> {
         let mut table: Option<Table> = None;

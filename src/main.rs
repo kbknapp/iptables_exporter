@@ -7,7 +7,7 @@ use std::{
     },
 };
 
-use clap::*;
+use clap::Parser;
 use prometheus::{IntGauge, Registry};
 use prometheus_hyper::Server;
 use tokio::time::{Duration, Instant};

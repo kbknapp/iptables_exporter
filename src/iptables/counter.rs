@@ -26,14 +26,10 @@ impl Counter {
     }
 
     #[inline]
-    pub(crate) fn bytes(&self) -> u64 {
-        self.bytes
-    }
+    pub(crate) fn bytes(&self) -> u64 { self.bytes }
 
     #[inline]
-    pub(crate) fn packets(&self) -> u64 {
-        self.packets
-    }
+    pub(crate) fn packets(&self) -> u64 { self.packets }
 }
 
 #[cfg(test)]
