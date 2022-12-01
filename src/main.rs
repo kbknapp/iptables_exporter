@@ -1,9 +1,17 @@
+#[macro_use]
+mod macros;
+mod cli;
+mod error;
+mod iptables;
+mod parse;
+
 use std::{
+    collections::HashMap,
     env,
     net::SocketAddr,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc,
+        Arc, Mutex,
     },
 };
 
@@ -13,14 +21,7 @@ use prometheus_hyper::Server;
 use tokio::time::{Duration, Instant};
 use tracing::{debug, info};
 
-#[macro_use]
-mod macros;
-mod cli;
-mod error;
-mod iptables;
-mod parse;
-
-use iptables::{iptables_save, IptablesState, Metrics};
+use crate::iptables::{iptables_save, IptablesState, Metrics};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
@@ -43,19 +44,33 @@ async fn main() {
 
     info!("Registering metrics...");
     let registry = Arc::new(Registry::new());
-    let mut metrics = unwrap_or_exit!(Metrics::new(&registry));
-    let scrape_duration = unwrap_or_exit!(IntGauge::new(
-        "iptables_scrape_duration_milliseconds",
-        "Duration in milliseconds of the scrape",
-    ));
+    let metrics = Arc::new(Mutex::new(unwrap_or_exit!(Metrics::new(
+        &args.scrape_targets,
+        &registry
+    ))));
 
-    let scrape_success = unwrap_or_exit!(IntGauge::new(
-        "iptables_scrape_success",
-        "If the scrape was a success"
-    ));
-    debug!("Registering scrape metrics...");
-    unwrap_or_exit!(registry.register(Box::new(scrape_duration.clone())));
-    unwrap_or_exit!(registry.register(Box::new(scrape_success.clone())));
+    let mut scrape_durations = HashMap::new();
+    let mut scrape_successes = HashMap::new();
+    for tgt in &args.scrape_targets {
+        let tgt_str = tgt.to_string();
+        let prefix = tgt_str.replace('-', "_");
+        let d = unwrap_or_exit!(IntGauge::new(
+            &format!("{prefix}_scrape_duration_milliseconds"),
+            "Duration in milliseconds of the scrape",
+        ));
+        let s = unwrap_or_exit!(IntGauge::new(
+            &format!("{prefix}_scrape_success"),
+            "If the scrape was a success"
+        ));
+        scrape_durations.insert(tgt_str.clone(), d.clone());
+        scrape_successes.insert(tgt_str.clone(), s.clone());
+        debug!("Registering {tgt_str} scrape metrics...");
+        unwrap_or_exit!(registry.register(Box::new(d)));
+        unwrap_or_exit!(registry.register(Box::new(s)));
+    }
+
+    let scrape_durations = Arc::new(Mutex::new(scrape_durations));
+    let scrape_successes = Arc::new(Mutex::new(scrape_successes));
 
     info!("Spawning server...");
     tokio::spawn(Server::run(
@@ -66,20 +81,37 @@ async fn main() {
 
     let mut collect_int = tokio::time::interval(Duration::from_secs(args.collect_interval));
     while running.load(Ordering::Relaxed) {
-        info!("Collecting metrics...");
-        let before = Instant::now();
-        let out = unwrap_or_exit!(iptables_save().await);
-        let mut state = IptablesState::new();
-        unwrap_or_exit!(state.parse(&*out).await);
+        // .cloned() required becuase of async move
+        #[allow(clippy::unnecessary_to_owned)]
+        for tgt in args.scrape_targets.iter().cloned() {
+            let scrape_durations = scrape_durations.clone();
+            let scrape_successes = scrape_successes.clone();
+            let metrics = metrics.clone();
+            tokio::task::spawn(async move {
+                info!("Collecting {tgt} metrics...");
+                let before = Instant::now();
+                let out = unwrap_or_exit!(iptables_save(tgt).await);
 
-        debug!("Updating metrics...");
-        metrics.update(&state).await;
-        let after = Instant::now();
+                let mut state = IptablesState::new();
+                unwrap_or_exit!(state.parse(&*out).await);
 
-        let elapsed = after.duration_since(before);
-        scrape_duration.set((elapsed.as_secs() * 1000 + elapsed.subsec_millis() as u64) as i64);
-        scrape_success.set(1);
+                debug!("Updating {tgt} metrics...");
+                if let Ok(mut guard) = metrics.lock() {
+                    guard.update(tgt, &state);
+                };
+                let after = Instant::now();
 
+                let elapsed = after.duration_since(before);
+                if let Ok(mut guard) = scrape_durations.lock() {
+                    let guage = guard.get_mut(&tgt.to_string()).unwrap();
+                    guage.set((elapsed.as_secs() * 1000 + elapsed.subsec_millis() as u64) as i64);
+                }
+                if let Ok(mut guard) = scrape_successes.lock() {
+                    let guage = guard.get_mut(&tgt.to_string()).unwrap();
+                    guage.set(1);
+                }
+            });
+        }
         debug!("Sleeping...");
         collect_int.tick().await;
     }

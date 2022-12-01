@@ -3,10 +3,11 @@
 
 An asynchronous Prometheus exporter for `iptables`
 
-`iptables_exporter` runs `iptables-save --counter` and scrapes the output to
-build Prometheus metrics. Because `iptables-save` requires `root` privileges,
-this tool must be run as `root` (or via `sudo`) or with the following
-capabilities in both the ambient and bounding set:
+`iptables_exporter` runs one of several backend "scrape targets" such as
+`iptables-save --counter` and scrapes the output to build Prometheus metrics.
+Because these scrape targets require `root` privileges, this tool must be run as
+`root` (or via `sudo`) or with the following capabilities in both the ambient
+and bounding set:
 
 - CAP_DAC_READ_SEARCH
 - CAP_NET_ADMIN
@@ -22,6 +23,25 @@ capabilities in both the ambient and bounding set:
 - Total number of chains per table
 - Scrape duration in milliseconds
 - Scrape success
+
+# Scrape Targets Supported
+
+- `iptables-save`
+- `ip6tables-save`
+- `iptables-legacy-save`
+- `ip6tables-legacy-save`
+
+Multiple scrape targets can be enabled at once by using the
+`-t|--scrape-targets` flag multiple times. Such as:
+
+```
+$ iptables_exporter -t iptables -t iptables-legacy -t ip6tables
+```
+
+By default only `iptables` is enabled.
+
+The metrics provided will be prefixed with the various scrape targets, such as
+`iptables_*`, `iptables_legacy_*`, etc. 
 
 # Installation
 
@@ -46,20 +66,49 @@ $ sudo cp target/release/iptables_exporter /usr/local/bin/
 ## Command Line Interface
 
 ```
-USAGE:
-    iptables_exporter [FLAGS] [OPTIONS]
+Usage: iptables_exporter [OPTIONS]
 
-FLAGS:
-    -h, --help       Prints help information
-    -q, --quiet      Supress output at a level or lower. -q: INFO, -qq: WARN, -qqq: ERROR (i.e.
-                     everything)
-    -v, --verbose    Show verbose output at a level or higher. -v:  DEBUG, -vv: TRACE
-    -V, --version    Prints version information
+Options:
+      --collect-interval <SECS>
+          How often metrics are gathered
 
-OPTIONS:
-        --collect-interval <SECS>    How often metrics are gathered [default: 5]
-    -l, --listen-address <ADDR>      The listen address scraping metrics [default: 0.0.0.0]
-    -p, --listen-port <PORT>         The listen port for scraping metrics [default: 9455]
+          [default: 5]
+
+  -p, --listen-port <PORT>
+          The listen port for scraping metrics
+
+          [default: 9455]
+
+  -l, --listen-address <ADDR>
+          The listen address scraping metrics
+
+          [default: 0.0.0.0]
+
+  -t, --scrape-targets <TARGET>
+          Which backends to scrape for metrics, multiple targets can be enabled at
+          once by using this flag multiple times
+
+          [default: iptables]
+          [aliases: scrape-target]
+
+          Possible values:
+          - iptables:         enable 'iptables-save' for metrics
+          - ip6tables:        enable 'ip6tables-save' for metrics
+          - iptables-legacy:  enable 'iptables-legacy-save' for metrics
+          - ip6tables-legacy: enable 'ip6tables-legacy-save' for metrics
+
+  -v, --verbose...
+          Show verbose output at a level or higher. -v:  DEBUG, -vv: TRACE
+
+  -q, --quiet...
+          Supress output at a level or lower. -q: INFO, -qq: WARN, -qqq: ERROR (i.e.
+          everything)
+
+  -h, --help
+          Print help information (use `-h` for a summary)
+
+  -V, --version
+          Print version information
 ```
 
 To run with the default options, and the binary is installed somewhere in your
