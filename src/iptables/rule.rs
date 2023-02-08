@@ -2,18 +2,24 @@ use crate::{iptables::Counter, parse::idx_after};
 
 use anyhow::Result;
 
-#[derive(Clone, Debug, PartialEq)]
-pub(crate) struct Rule {
-    pub(crate) rule: String,
-    pub(crate) counter: Counter,
-    pub(crate) comment: Option<String>,
-}
-
 macro_rules! regex {
     ($re:literal $(,)?) => {{
         static RE: once_cell::sync::OnceCell<regex::Regex> = once_cell::sync::OnceCell::new();
         RE.get_or_init(|| regex::Regex::new($re).unwrap())
     }};
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct Comment {
+    pub(crate) comment: String,
+    pub(crate) counter: Counter,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct Rule {
+    pub(crate) rule: String,
+    pub(crate) counter: Counter,
+    pub(crate) comment: Option<Comment>,
 }
 
 impl Rule {
@@ -40,7 +46,7 @@ impl Rule {
             chain,
             Self {
                 rule: line[chain_end..].trim().into(),
-                comment,
+                comment: comment.map(|s| Comment { comment: s, counter: Counter::default() }),
                 counter,
             },
         ))
