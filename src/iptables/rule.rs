@@ -15,6 +15,15 @@ pub(crate) struct Comment {
     pub(crate) counter: Counter,
 }
 
+impl Comment {
+    pub(crate) fn new<S: Into<String>>(c: S) -> Self {
+        Self {
+            comment: c.into(),
+            counter: Counter::default(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Rule {
     pub(crate) rule: String,
@@ -34,6 +43,7 @@ impl Rule {
         let after_chain = line[chain_end..].trim();
         let re = regex!(r#"--comment +"((?:[^"\\]|\\.)*)""#);
         let re_no_quotes = regex!(r#"--comment +((?:[^ "\\]|\\.)*)"#);
+        let re_rm = regex!(r#"-m +comment +--comment +"?(?:[^"\\]|\\.)*"?"#);
         let comment = if let Some(caps) = re.captures(after_chain) {
             caps.get(1).map(|m| m.as_str().to_owned())
         } else if let Some(caps) = re_no_quotes.captures(after_chain) {
@@ -45,8 +55,8 @@ impl Rule {
         Ok((
             chain,
             Self {
-                rule: line[chain_end..].trim().into(),
-                comment: comment.map(|s| Comment { comment: s, counter: Counter::default() }),
+                rule: re_rm.replace(line[chain_end..].trim(), "").trim().into(),
+                comment: comment.map(Comment::new),
                 counter,
             },
         ))
@@ -98,8 +108,8 @@ mod test {
             (
                 "POSTROUTING".into(),
                 Rule {
-                    rule: "-j LIBVIRT_PRT -m comment --comment \"test comment\"".into(),
-                    comment: Some("test comment".into()),
+                    rule: "-j LIBVIRT_PRT".into(),
+                    comment: Some(Comment::new("test comment")),
                     counter: Counter {
                         packets: 607613,
                         bytes: 364557889,
@@ -119,8 +129,8 @@ mod test {
             (
                 "POSTROUTING".into(),
                 Rule {
-                    rule: "-m comment --comment   \"test 'foo' \\\"comment\"".into(),
-                    comment: Some("test 'foo' \\\"comment".into()),
+                    rule: "".into(),
+                    comment: Some(Comment::new("test 'foo' \\\"comment")),
                     counter: Counter::default()
                 }
             )
@@ -134,8 +144,8 @@ mod test {
             (
                 "POSTROUTING".into(),
                 Rule {
-                    rule: "-m comment --comment   TEST-COMMENT".into(),
-                    comment: Some("TEST-COMMENT".into()),
+                    rule: "".into(),
+                    comment: Some(Comment::new("TEST-COMMENT")),
                     counter: Counter::default(),
                 }
             )
