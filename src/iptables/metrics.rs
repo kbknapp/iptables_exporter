@@ -11,6 +11,8 @@ pub(crate) struct TargetMetrics {
     rules_total: IntGaugeVec,
     chain_bytes_total: IntCounterVec,
     chain_packets_total: IntCounterVec,
+    comment_bytes_total: IntCounterVec,
+    comment_packets_total: IntCounterVec,
     rule_bytes_total: IntCounterVec,
     rule_packets_total: IntCounterVec,
 }
@@ -49,6 +51,24 @@ impl TargetMetrics {
                         .with_label_values(&[&t.name, &c.name, &r.rule]);
                     let diff = r.counter.bytes() - rbt.get();
                     rbt.inc_by(diff);
+
+                    if let Some(cmt) = &r.comment {
+                        let cpt = self.comment_packets_total.with_label_values(&[
+                            &t.name,
+                            &c.name,
+                            &cmt.comment,
+                        ]);
+                        let diff = cmt.counter.packets() - cpt.get();
+                        cpt.inc_by(diff);
+
+                        let cbt = self.comment_bytes_total.with_label_values(&[
+                            &t.name,
+                            &c.name,
+                            &cmt.comment,
+                        ]);
+                        let diff = cmt.counter.packets() - cbt.get();
+                        cbt.inc_by(diff);
+                    }
                 }
             }
         }
@@ -115,9 +135,27 @@ impl Metrics {
                 &["table", "chain", "rule"],
             )?;
 
+            let comment_bytes_total = IntCounterVec::new(
+                Opts::new(
+                    &format!("{prefix}_comment_bytes_total"),
+                    "Total bytes matching a given comment inside a rule",
+                ),
+                &["table", "chain", "comment"],
+            )?;
+
+            let comment_packets_total = IntCounterVec::new(
+                Opts::new(
+                    &format!("{prefix}_comment_packets_total"),
+                    "Total packets matching a given comment inside a rule",
+                ),
+                &["table", "chain", "comment"],
+            )?;
+
             debug!("Registering {prefix} metrics");
             r.register(Box::new(chain_bytes_total.clone()))?;
             r.register(Box::new(chain_packets_total.clone()))?;
+            r.register(Box::new(comment_bytes_total.clone()))?;
+            r.register(Box::new(comment_packets_total.clone()))?;
             r.register(Box::new(rule_bytes_total.clone()))?;
             r.register(Box::new(rule_packets_total.clone()))?;
             r.register(Box::new(rules_total.clone()))?;
@@ -129,6 +167,8 @@ impl Metrics {
                     rules_total,
                     chain_bytes_total,
                     chain_packets_total,
+                    comment_bytes_total,
+                    comment_packets_total,
                     rule_bytes_total,
                     rule_packets_total,
                 },
