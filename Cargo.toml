@@ -1,6 +1,6 @@
 [package]
 name = "iptables_exporter"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 authors = [
 	"Kevin K. <kbknapp@gmail.com>",
@@ -16,7 +16,7 @@ keywords = [
 categories = ["command-line-utilities"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-rust-version = "1.60.0" # MSRV
+rust-version = "1.74.1" # MSRV
 
 [badges]
 is-it-maintained-issue-resolution = { repository = "kbknapp/iptables_exporter" }

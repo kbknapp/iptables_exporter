@@ -1,3 +1,10 @@
+<a name="v0.4.0"></a>
+## v0.4.0 iptables_exporter Release (2024-03-29)
+
+#### Maintenance
+
+*   bump MSRV to 1.74.1 ([f1761c6e](https://github.com/kbknapp/iptables_exporter/commit/f1761c6edae3f79e630ff2eda132ba64d3ac49c0))
+*   update deps to fix compiles ([29c0e7d7](https://github.com/kbknapp/iptables_exporter/commit/29c0e7d75b69eda9d83f996f7cb7978a343eb410))
 
 <a name="0.3.0"></a>
 ## 0.3.0 Initial Release (2023-02-07)
