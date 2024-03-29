@@ -4,3 +4,4 @@ subtitle = "iptables_exporter Release"
 
 [sections]
 Documentation = ["docs", "doc"]
+Maintenance = ["maint"]
