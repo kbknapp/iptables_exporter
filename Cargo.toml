@@ -16,7 +16,7 @@ keywords = [
 categories = ["command-line-utilities"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-rust-version = "1.60.0" # MSRV
+rust-version = "1.74.1" # MSRV
 
 [badges]
 is-it-maintained-issue-resolution = { repository = "kbknapp/iptables_exporter" }
